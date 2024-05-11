@@ -227,7 +227,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.restore();
 
   // current speed
-  if (!bigMapOpen) {
+  if (!(bigMapOpen || hideSpeed)) {
     p.setFont(InterFont(176, QFont::Bold));
     drawText(p, rect().center().x(), 210, speedStr);
     p.setFont(InterFont(66));
@@ -811,6 +811,8 @@ void AnnotatedCameraWidget::updateFrogPilotWidgets(const UIScene &scene) {
   stoppedEquivalence = scene.stopped_equivalence;
 
   experimentalMode = scene.experimental_mode;
+
+  hideSpeed = scene.hide_speed;
 
   laneDetectionWidth = scene.lane_detection_width;
   laneWidthLeft = scene.lane_width_left;
