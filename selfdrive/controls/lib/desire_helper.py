@@ -72,7 +72,8 @@ class DesireHelper:
         self.lane_change_direction = LaneChangeDirection.left if \
           carstate.leftBlinker else LaneChangeDirection.right
 
-        torque_applied = carstate.steeringPressed and \
+        torque_applied = frogpilot_toggles.nudgeless or \
+                         carstate.steeringPressed and \
                          ((carstate.steeringTorque > 0 and self.lane_change_direction == LaneChangeDirection.left) or
                           (carstate.steeringTorque < 0 and self.lane_change_direction == LaneChangeDirection.right))
 
