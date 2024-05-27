@@ -64,6 +64,7 @@ private:
   bool trafficModeActive;
 
   float accelerationConversion;
+  float cruiseAdjustment;
   float distanceConversion;
   float speedConversion;
 
@@ -75,6 +76,8 @@ private:
   QString accelerationUnit;
   QString leadDistanceUnit;
   QString leadSpeedUnit;
+
+  inline QColor greenColor(int alpha = 242) { return QColor(23, 134, 68, alpha); }
 
 protected:
   void paintGL() override;
