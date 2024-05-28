@@ -921,6 +921,9 @@ class Controls:
       if self.green_light_mac.get_moving_average() >= PROBABILITY:
         self.events.add(EventName.greenLight)
 
+    if self.frogpilot_toggles.lead_departing_alert and self.sm['frogpilotPlan'].leadDeparting:
+      self.events.add(EventName.leadDeparting)
+
     if not self.openpilot_crashed_triggered and os.path.isfile(os.path.join(sentry.CRASHES_DIR, 'error.txt')):
       self.events.add(EventName.openpilotCrashed)
       self.openpilot_crashed_triggered = True
