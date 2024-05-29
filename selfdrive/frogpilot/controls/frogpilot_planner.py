@@ -66,6 +66,7 @@ class FrogPilotPlanner:
     self.frame = 0
     self.mtsc_target = 0
     self.overridden_speed = 0
+    self.previous_lead_angle = 0
     self.previous_lead_distance = 0
     self.road_curvature = 0
     self.slc_target = 0
@@ -162,13 +163,18 @@ class FrogPilotPlanner:
       self.lane_width_left = 0
       self.lane_width_right = 0
 
-    if self.frame % 0.5:
-      self.lead_departing = lead_distance - self.previous_lead_distance > 0.5 and self.previous_lead_distance != 0 and carState.standstill
+    if self.frame % 0.5 and carState.standstill and self.lead_one.status:
+      if self.previous_lead_angle == 0:
+        self.previous_lead_angle = self.lead_one.yRel
+
+      self.lead_departing = lead_distance - self.previous_lead_distance > 0.5
       self.previous_lead_distance = lead_distance
 
       self.lead_departing &= not carState.gasPressed
       self.lead_departing &= v_lead > 1
-      self.lead_departing &= carState.gearShifter not in (GearShifter.neutral, GearShifter.park, GearShifter.reverse, GearShifter.unknown)
+      self.lead_departing &= abs(self.lead_one.yRel - self.previous_lead_angle) < 1
+    elif not (carState.standstill or self.lead_one.status):
+      self.previous_lead_angle = 0
 
     self.road_curvature = calculate_road_curvature(modelData, v_ego)
     self.v_cruise = self.update_v_cruise(carState, controlsState, frogpilotCarState, frogpilotNavigation, liveLocationKalman, modelData, v_cruise, v_ego, frogpilot_toggles)
