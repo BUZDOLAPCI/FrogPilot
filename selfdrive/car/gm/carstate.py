@@ -178,6 +178,8 @@ class CarState(CarStateBase):
     else:
       self.lkas_enabled = pt_cp.vl["ASCMSteeringButton"]["LKAButton"]
 
+    fp_ret.sportGear = pt_cp.vl["SportMode"]["SportMode"] == 1
+
     return ret, fp_ret
 
   @staticmethod
@@ -217,6 +219,7 @@ class CarState(CarStateBase):
       ("EBCMFrictionBrakeStatus", 20),
       ("PSCMSteeringAngle", 100),
       ("ECMAcceleratorPos", 80),
+      ("SportMode", 0),
     ]
 
     if CP.carFingerprint in SDGM_CAR:
