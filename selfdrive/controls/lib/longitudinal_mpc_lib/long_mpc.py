@@ -18,6 +18,8 @@ else:
 
 from casadi import SX, vertcat
 
+from openpilot.selfdrive.frogpilot.controls.lib.frogpilot_variables import CITY_SPEED_LIMIT
+
 MODEL_NAME = 'long'
 LONG_MPC_DIR = os.path.dirname(os.path.abspath(__file__))
 EXPORT_DIR = os.path.join(LONG_MPC_DIR, "c_generated_code")
@@ -323,10 +325,10 @@ class LongitudinalMpc:
     lead_xv = np.column_stack((x_lead_traj, v_lead_traj))
     return lead_xv
 
-  def process_lead(self, lead):
+  def process_lead(self, lead, increased_stopping_distance=0):
     v_ego = self.x0[1]
     if lead is not None and lead.status:
-      x_lead = lead.dRel
+      x_lead = lead.dRel - increased_stopping_distance
       v_lead = lead.vLead
       a_lead = lead.aLeadK
       a_lead_tau = lead.aLeadTau
@@ -355,8 +357,9 @@ class LongitudinalMpc:
   def update(self, radarstate, v_cruise, x, v, a, j, t_follow, frogpilot_toggles, personality=log.LongitudinalPersonality.standard):
     v_ego = self.x0[1]
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
+    increased_distance = max(frogpilot_toggles.increased_stopping_distance + min(CITY_SPEED_LIMIT - v_ego, 0), 0)
 
-    lead_xv_0 = self.process_lead(radarstate.leadOne)
+    lead_xv_0 = self.process_lead(radarstate.leadOne, increased_distance)
     lead_xv_1 = self.process_lead(radarstate.leadTwo)
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
