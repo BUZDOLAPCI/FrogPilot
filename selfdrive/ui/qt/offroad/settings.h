@@ -25,17 +25,32 @@ public:
 protected:
   void showEvent(QShowEvent *event) override;
 
+  // FrogPilot widgets
+  void hideEvent(QHideEvent *event) override;
+
 signals:
   void closeSettings();
   void reviewTrainingGuide();
   void showDriverView();
   void expandToggleDescription(const QString &param);
 
+  // FrogPilot signals
+  void closeParentToggle();
+  void closeSubParentToggle();
+  void closeSubSubParentToggle();
+
 private:
   QPushButton *sidebar_alert_widget;
   QWidget *sidebar_widget;
   QButtonGroup *nav_btns;
   QStackedWidget *panel_widget;
+
+  // FrogPilot variables
+  bool parentToggleOpen;
+  bool subParentToggleOpen;
+  bool subSubParentToggleOpen;
+
+  int previousScrollPosition;
 };
 
 class DevicePanel : public ListWidget {
