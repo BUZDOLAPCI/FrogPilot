@@ -289,6 +289,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   // base icon
   int offset = UI_BORDER_SIZE + btn_size / 2;
   int x = rightHandDM ? width() - offset : offset;
+  x += onroadDistanceButton ? 250 : 0;
   offset += showAlwaysOnLateralStatusBar || showConditionalExperimentalStatusBar ? 25 : 0;
   int y = height() - offset;
   float opacity = dmActive ? 0.65 : 0.2;
@@ -464,6 +465,9 @@ void AnnotatedCameraWidget::showEvent(QShowEvent *event) {
 void AnnotatedCameraWidget::initializeFrogPilotWidgets() {
   bottom_layout = new QHBoxLayout();
 
+  distance_btn = new DistanceButton(this);
+  bottom_layout->addWidget(distance_btn);
+
   QSpacerItem *spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
   bottom_layout->addItem(spacer);
 
@@ -505,6 +509,14 @@ void AnnotatedCameraWidget::updateFrogPilotWidgets(const UIScene &scene) {
   experimentalMode = scene.experimental_mode;
 
   mapOpen = scene.map_open;
+
+  onroadDistanceButton = scene.onroad_distance_button;
+  bool enableDistanceButton = onroadDistanceButton && !hideBottomIcons;
+  distance_btn->setVisible(enableDistanceButton);
+  if (enableDistanceButton) {
+    distance_btn->updateState(scene);
+    bottom_layout->setAlignment(distance_btn, (rightHandDM ? Qt::AlignRight : Qt::AlignLeft));
+  }
 }
 
 void AnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p) {
