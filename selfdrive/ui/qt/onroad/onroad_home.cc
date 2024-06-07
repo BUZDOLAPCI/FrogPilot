@@ -124,6 +124,9 @@ void OnroadWindow::primeChanged(bool prime) {
 }
 
 void OnroadWindow::paintEvent(QPaintEvent *event) {
+  UIState *s = uiState();
+  SubMaster &sm = *(s->sm);
+
   QPainter p(this);
   p.fillRect(rect(), QColor(bg.red(), bg.green(), bg.blue(), 255));
 }
