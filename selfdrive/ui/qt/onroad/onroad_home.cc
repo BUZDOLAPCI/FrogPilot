@@ -88,10 +88,19 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   QRect maxSpeedRect(7, 25, 225, 225);
   bool isMaxSpeedClicked = maxSpeedRect.contains(e->pos()) && scene.reverse_cruise_ui;
 
+  QRect speedLimitRect(7, 250, 225, 225);
+  bool isSpeedLimitClicked = speedLimitRect.contains(e->pos()) && scene.show_slc_offset_ui;
+
   if (isMaxSpeedClicked) {
     scene.reverse_cruise = !scene.reverse_cruise;
     params.putBoolNonBlocking("ReverseCruise", scene.reverse_cruise);
     updateFrogPilotToggles();
+    return;
+  }
+
+  if (isSpeedLimitClicked) {
+    scene.show_slc_offset = !scene.show_slc_offset;
+    params.putBoolNonBlocking("ShowSLCOffset", scene.show_slc_offset);
     return;
   }
 
