@@ -25,6 +25,8 @@ from openpilot.system.hardware.power_monitoring import PowerMonitoring
 from openpilot.system.hardware.fan_controller import TiciFanController
 from openpilot.system.version import terms_version, training_version
 
+from openpilot.selfdrive.frogpilot.controls.lib.frogpilot_variables import FrogPilotVariables
+
 ThermalStatus = log.DeviceState.ThermalStatus
 NetworkType = log.DeviceState.NetworkType
 NetworkStrength = log.DeviceState.NetworkStrength
@@ -162,7 +164,7 @@ def hw_state_thread(end_event, hw_queue):
     time.sleep(DT_HW)
 
 
-def hardware_thread(end_event, hw_queue) -> None:
+def hardware_thread(end_event, hw_queue, frogpilot_toggles) -> None:
   pm = messaging.PubMaster(['deviceState', 'frogpilotDeviceState'])
   sm = messaging.SubMaster(["peripheralState", "gpsLocationExternal", "controlsState", "pandaStates"], poll="pandaStates")
 
@@ -387,7 +389,7 @@ def hardware_thread(end_event, hw_queue) -> None:
     msg.deviceState.somPowerDrawW = som_power_draw
 
     # Check if we need to shut down
-    if power_monitor.should_shutdown(onroad_conditions["ignition"], in_car, off_ts, started_seen):
+    if power_monitor.should_shutdown(onroad_conditions["ignition"], in_car, off_ts, started_seen, frogpilot_toggles):
       cloudlog.warning(f"shutting device down, offroad since {off_ts}")
       params.put_bool("DoShutdown", True)
 
@@ -449,6 +451,9 @@ def hardware_thread(end_event, hw_queue) -> None:
     count += 1
     should_start_prev = should_start
 
+    # Update FrogPilot parameters
+    if FrogPilotVariables.toggles_updated:
+      FrogPilotVariables.update_frogpilot_params(started_ts is not None)
 
 def main():
   hw_queue = queue.Queue(maxsize=1)
@@ -456,7 +461,7 @@ def main():
 
   threads = [
     threading.Thread(target=hw_state_thread, args=(end_event, hw_queue)),
-    threading.Thread(target=hardware_thread, args=(end_event, hw_queue)),
+    threading.Thread(target=hardware_thread, args=(end_event, hw_queue, FrogPilotVariables.toggles)),
   ]
 
   for t in threads:

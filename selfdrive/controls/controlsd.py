@@ -31,6 +31,8 @@ from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
 
 from openpilot.system.hardware import HARDWARE
 
+from openpilot.selfdrive.frogpilot.controls.lib.frogpilot_variables import FrogPilotVariables
+
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
@@ -60,7 +62,11 @@ ENABLED_STATES = (State.preEnabled, *ACTIVE_STATES)
 
 class Controls:
   def __init__(self, CI=None):
+    # FrogPilot variables
+    self.frogpilot_toggles = FrogPilotVariables.toggles
+
     self.params = Params()
+    self.params_memory = Params("/dev/shm/params")
 
     if CI is None:
       cloudlog.info("controlsd is waiting for CarParams")
@@ -512,7 +518,7 @@ class Controls:
           else:
             self.state = State.enabled
           self.current_alert_types.append(ET.ENABLE)
-          self.v_cruise_helper.initialize_v_cruise(CS, self.experimental_mode)
+          self.v_cruise_helper.initialize_v_cruise(CS, self.experimental_mode, self.frogpilot_toggles)
 
     # Check if openpilot is engaged and actuators are enabled
     self.enabled = self.state in ENABLED_STATES
@@ -838,6 +844,10 @@ class Controls:
       if self.CP.notCar:
         self.joystick_mode = self.params.get_bool("JoystickDebugMode")
       time.sleep(0.1)
+
+      # Update FrogPilot parameters
+      if FrogPilotVariables.toggles_updated:
+        FrogPilotVariables.update_frogpilot_params()
 
   def controlsd_thread(self):
     e = threading.Event()

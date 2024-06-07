@@ -254,6 +254,11 @@ void ui_update_params(UIState *s) {
   s->scene.map_on_left = params.getBool("NavSettingLeftSide");
 }
 
+void ui_update_frogpilot_params(UIState *s) {
+  Params params = Params();
+  UIScene &scene = s->scene;
+}
+
 void UIState::updateStatus() {
   if (scene.started && sm->updated("controlsState")) {
     auto controls_state = (*sm)["controlsState"].getControlsState();
@@ -270,6 +275,7 @@ void UIState::updateStatus() {
     if (scene.started) {
       status = STATUS_DISENGAGED;
       scene.started_frame = sm->frame;
+      updateFrogPilotToggles();
     }
     started_prev = scene.started;
     scene.world_objects_visible = false;
@@ -297,6 +303,8 @@ UIState::UIState(QObject *parent) : QObject(parent) {
   timer = new QTimer(this);
   QObject::connect(timer, &QTimer::timeout, this, &UIState::update);
   timer->start(1000 / UI_FREQ);
+
+  ui_update_frogpilot_params(this);
 }
 
 void UIState::update() {
@@ -308,6 +316,13 @@ void UIState::update() {
     watchdog_kick(nanos_since_boot());
   }
   emit uiUpdate(*this);
+
+  // Update FrogPilot parameters
+  if (paramsMemory.getBool("FrogPilotTogglesUpdated")) {
+    ui_update_frogpilot_params(this);
+  }
+
+  // FrogPilot variables that need to be constantly updated
 }
 
 void UIState::setPrimeType(PrimeType type) {
