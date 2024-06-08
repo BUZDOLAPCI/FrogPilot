@@ -52,6 +52,7 @@ LaneChangeState = log.LaneChangeState
 LaneChangeDirection = log.LaneChangeDirection
 EventName = car.CarEvent.EventName
 ButtonType = car.CarState.ButtonEvent.Type
+GearShifter = car.CarState.GearShifter
 SafetyModel = car.CarParams.SafetyModel
 
 IGNORED_SAFETY_MODES = (SafetyModel.silent, SafetyModel.noOutput)
@@ -72,6 +73,7 @@ class Controls:
     self.current_total_drives = self.params_tracking.get_int("FrogPilotDrives")
     self.current_total_time = self.params_tracking.get_float("FrogPilotMinutes")
 
+    self.always_on_lateral_active = False
     self.drive_added = False
     self.openpilot_crashed_triggered = False
 
@@ -540,7 +542,7 @@ class Controls:
     # Check if openpilot is engaged and actuators are enabled
     self.enabled = self.state in ENABLED_STATES
     self.active = self.state in ACTIVE_STATES
-    if self.active:
+    if self.active or self.always_on_lateral_active:
       self.current_alert_types.append(ET.WARNING)
 
   def state_control(self, CS):
@@ -567,7 +569,7 @@ class Controls:
 
     # Check which actuators can be enabled
     standstill = CS.vEgo <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
-    CC.latActive = self.active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
+    CC.latActive = (self.active or self.always_on_lateral_active) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                    (not standstill or self.joystick_mode)
     CC.longActive = self.enabled and not self.events.contains(ET.OVERRIDE_LONGITUDINAL) and self.CP.openpilotLongitudinalControl
 
@@ -889,6 +891,14 @@ class Controls:
       self.openpilot_crashed_triggered = True
 
   def update_frogpilot_variables(self, CS):
+    driving_gear = CS.gearShifter not in (GearShifter.neutral, GearShifter.park, GearShifter.reverse, GearShifter.unknown)
+
+    self.always_on_lateral_active |= CS.cruiseState.enabled or self.frogpilot_toggles.always_on_lateral_main
+    self.always_on_lateral_active &= CS.cruiseState.available
+    self.always_on_lateral_active &= self.frogpilot_toggles.always_on_lateral
+    self.always_on_lateral_active &= driving_gear
+    self.always_on_lateral_active &= not (CS.brakePressed and CS.vEgo < self.frogpilot_toggles.always_on_lateral_pause_speed) or CS.standstill
+
     self.drive_distance += CS.vEgo * DT_CTRL
     self.drive_time += DT_CTRL
 
@@ -909,6 +919,7 @@ class Controls:
         self.drive_added = True
 
     FPCC = custom.FrogPilotCarControl.new_message()
+    FPCC.alwaysOnLateral = self.always_on_lateral_active
 
     return FPCC
 

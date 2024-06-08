@@ -53,8 +53,10 @@ private:
 
   QHBoxLayout *bottom_layout;
 
+  bool alwaysOnLateralActive;
   bool experimentalMode;
   bool mapOpen;
+  bool showAlwaysOnLateralStatusBar;
 
   float accelerationConversion;
   float distanceConversion;
