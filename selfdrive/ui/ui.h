@@ -146,6 +146,7 @@ typedef struct UIScene {
   bool reverse_cruise_ui;
   bool right_hand_drive;
   bool road_name_ui;
+  bool rotating_wheel;
   bool show_aol_status_bar;
   bool show_cem_status_bar;
   bool show_slc_offset;
@@ -177,6 +178,7 @@ typedef struct UIScene {
   int conditional_speed;
   int conditional_speed_lead;
   int conditional_status;
+  int steering_angle_deg;
   int wheel_icon;
 
   QPolygonF track_adjacent_vertices[6];
