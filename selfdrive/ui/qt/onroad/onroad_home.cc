@@ -285,10 +285,27 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
   }
 
   QString logicsDisplayString;
+  auto appendJerkInfo = [&](const QString &label, double value, double difference) {
+    logicsDisplayString += QString("%1: %2").arg(label).arg(value, 0, 'f', 3);
+    if (difference != 0) {
+      logicsDisplayString += QString(" (%1%2)").arg(difference > 0 ? "-" : "", 0).arg(difference, 0, 'f', 3);
+    }
+    logicsDisplayString += " | ";
+  };
+
+  if (scene.show_jerk) {
+    appendJerkInfo("Acceleration Jerk", scene.acceleration_jerk, scene.acceleration_jerk_difference);
+    appendJerkInfo("Speed Jerk", scene.speed_jerk, scene.speed_jerk_difference);
+  }
+
   if (scene.show_tuning) {
     logicsDisplayString += scene.live_valid
         ? QString("Friction: %1 | Lateral Acceleration: %2").arg(scene.friction, 0, 'f', 3).arg(scene.lat_accel, 0, 'f', 3)
         : "Friction: Calculating... | Lateral Acceleration: Calculating...";
+  }
+
+  if (logicsDisplayString.endsWith(" | ")) {
+    logicsDisplayString.chop(3);
   }
 
   if (!logicsDisplayString.isEmpty()) {
@@ -307,7 +324,22 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
       QStringList subParts = part.split(" ");
       for (int i = 0; i < subParts.size(); ++i) {
         QString text = subParts[i];
-        p.setPen(Qt::white);
+
+        if (text.endsWith(")") && i > 0 && (subParts[i - 1].contains("Acceleration") || subParts[i - 1].contains("Speed"))) {
+          QString prefix = subParts[i - 1] + " (";
+          p.drawText(currentX, logicsY, prefix);
+          currentX += p.fontMetrics().horizontalAdvance(prefix);
+          text.chop(1);
+          p.setPen(text.contains("-") ? redColor() : Qt::white);
+        } else if (text.startsWith("(") && i > 0) {
+          p.drawText(currentX, logicsY, " (");
+          currentX += p.fontMetrics().horizontalAdvance(" (");
+          text = text.mid(1);
+          p.setPen(text.contains("-") ? redColor() : Qt::white);
+        } else {
+          p.setPen(Qt::white);
+        }
+
         p.drawText(currentX, logicsY, text);
         currentX += p.fontMetrics().horizontalAdvance(text + " ");
         needsUpdate = true;
