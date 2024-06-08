@@ -577,6 +577,18 @@ void AnnotatedCameraWidget::drawStatusBar(QPainter &p) {
     newStatus = conditionalStatusMap.at(status != STATUS_DISENGAGED ? conditionalStatus : 0);
   }
 
+  QString suffix;
+  if (!alwaysOnLateralActive && !mapOpen && status != STATUS_DISENGAGED && !newStatus.isEmpty()) {
+    if (conditionalStatus == 1 || conditionalStatus == 2) {
+      suffix = tr(". Long press the \"distance\" button to revert");
+    } else if (conditionalStatus == 3 || conditionalStatus == 4) {
+      suffix = tr(". Double press the \"LKAS\" button to revert");
+    } else if (conditionalStatus == 5 || conditionalStatus == 6) {
+      suffix = tr(". Double tap the screen to revert");
+    }
+    newStatus += suffix;
+  }
+
   if (newStatus != lastShownStatus) {
     lastShownStatus = newStatus;
     displayStatusText = true;
