@@ -77,7 +77,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   has_eu_speed_limit = (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA) && !(speedLimitController && !useViennaSLCSign) || (speedLimitController && useViennaSLCSign);
   is_metric = s.scene.is_metric;
   speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
-  hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE || customSignals != 0 && (turnSignalLeft || turnSignalRight));
+  hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE || customSignals != 0 && (turnSignalLeft || turnSignalRight) || bigMapOpen);
   status = s.status;
 
   // update engageability/experimental mode button
@@ -227,10 +227,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.restore();
 
   // current speed
-  p.setFont(InterFont(176, QFont::Bold));
-  drawText(p, rect().center().x(), 210, speedStr);
-  p.setFont(InterFont(66));
-  drawText(p, rect().center().x(), 290, speedUnit, 200);
+  if (!bigMapOpen) {
+    p.setFont(InterFont(176, QFont::Bold));
+    drawText(p, rect().center().x(), 210, speedStr);
+    p.setFont(InterFont(66));
+    drawText(p, rect().center().x(), 290, speedUnit, 200);
+  }
 
   p.restore();
 
@@ -815,6 +817,7 @@ void AnnotatedCameraWidget::updateFrogPilotWidgets(const UIScene &scene) {
   obstacleDistanceStock = scene.obstacle_distance_stock;
 
   mapOpen = scene.map_open;
+  bigMapOpen = mapOpen && scene.big_map;
 
   onroadDistanceButton = scene.onroad_distance_button;
   bool enableDistanceButton = onroadDistanceButton && !hideBottomIcons;
@@ -824,7 +827,7 @@ void AnnotatedCameraWidget::updateFrogPilotWidgets(const UIScene &scene) {
     bottom_layout->setAlignment(distance_btn, (rightHandDM ? Qt::AlignRight : Qt::AlignLeft));
   }
 
-  bool enablePedalIcons = scene.pedals_on_ui;
+  bool enablePedalIcons = scene.pedals_on_ui && !bigMapOpen;
   pedal_icons->setVisible(enablePedalIcons);
   if (enablePedalIcons) {
     pedal_icons->updateState(scene);
@@ -886,15 +889,15 @@ void AnnotatedCameraWidget::updateFrogPilotWidgets(const UIScene &scene) {
 }
 
 void AnnotatedCameraWidget::paintFrogPilotWidgets(QPainter &p) {
-  if (showAlwaysOnLateralStatusBar || showConditionalExperimentalStatusBar || roadNameUI) {
+  if ((showAlwaysOnLateralStatusBar || showConditionalExperimentalStatusBar || roadNameUI) && !bigMapOpen) {
     drawStatusBar(p);
   }
 
-  if (leadInfo) {
+  if (leadInfo && !bigMapOpen) {
     drawLeadInfo(p);
   }
 
-  if (customSignals != 0 && (turnSignalLeft || turnSignalRight)) {
+  if (customSignals != 0 && (turnSignalLeft || turnSignalRight) && !bigMapOpen) {
     if (!animationTimer->isActive()) {
       animationTimer->start(totalFrames * 11);  // 440 milliseconds per loop; syncs up perfectly with my 2019 Lexus ES 350 turn signal clicks
     }
