@@ -153,7 +153,11 @@ class CarState(CarStateBase):
     # Digital instrument clusters expect the ACC HUD lead car distance to be scaled differently
     self.upscale_lead_car_signal = bool(pt_cp.vl["Kombi_03"]["KBI_Variante"])
 
+    # FrogPilot CarState functions
+    fp_ret.brakeLights = bool(pt_cp.vl["ESP_05"]['ESP_Status_Bremsdruck'])
+
     self.frame += 1
+
     return ret, fp_ret
 
   def update_pq(self, pt_cp, cam_cp, ext_cp, trans_type, frogpilot_toggles):
@@ -253,7 +257,11 @@ class CarState(CarStateBase):
     # Additional safety checks performed in CarInterface.
     ret.espDisabled = bool(pt_cp.vl["Bremse_1"]["ESP_Passiv_getastet"])
 
+    # FrogPilot CarState functions
+    fp_ret.brakeLights = bool(pt_cp.vl["Motor_2"]['Bremstestschalter'])
+
     self.frame += 1
+
     return ret, fp_ret
 
   def update_hca_state(self, hca_status):
