@@ -75,6 +75,9 @@ def frogpilot_thread(frogpilot_toggles):
     if FrogPilotVariables.toggles_updated:
       FrogPilotVariables.update_frogpilot_params(started)
 
+      if time_validated and not started:
+        frogpilot_functions.backup_toggles()
+
     if not started and now.second == 0 or not time_validated:
       if github_pinged():
         time_checks(frogpilot_toggles.automatic_updates, deviceState, maps_downloaded, now, params, params_memory)
