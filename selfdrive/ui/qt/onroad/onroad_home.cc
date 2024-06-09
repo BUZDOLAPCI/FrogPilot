@@ -85,11 +85,24 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   UIScene &scene = s->scene;
 
   // FrogPilot clickable widgets
+  QSize size = this->size();
+  QRect leftRect(0, 0, size.width() / 2, size.height());
+  QRect rightRect = leftRect.translated(size.width() / 2, 0);
+  bool isLeftSideClicked = leftRect.contains(e->pos()) && scene.speed_limit_changed;
+  bool isRightSideClicked = rightRect.contains(e->pos()) && scene.speed_limit_changed;
+
   QRect maxSpeedRect(7, 25, 225, 225);
   bool isMaxSpeedClicked = maxSpeedRect.contains(e->pos()) && scene.reverse_cruise_ui;
 
   QRect speedLimitRect(7, 250, 225, 225);
   bool isSpeedLimitClicked = speedLimitRect.contains(e->pos()) && scene.show_slc_offset_ui;
+
+  if (isLeftSideClicked || isRightSideClicked) {
+    bool slcConfirmed = isLeftSideClicked && !scene.right_hand_drive || isRightSideClicked && scene.right_hand_drive;
+    paramsMemory.putBoolNonBlocking("SLCConfirmed", slcConfirmed);
+    paramsMemory.putBoolNonBlocking("SLCConfirmedPressed", true);
+    return;
+  }
 
   if (isMaxSpeedClicked) {
     scene.reverse_cruise = !scene.reverse_cruise;
