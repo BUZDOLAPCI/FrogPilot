@@ -21,6 +21,19 @@ from openpilot.selfdrive.frogpilot.controls.lib.frogpilot_variables import CITY_
 
 GearShifter = car.CarState.GearShifter
 
+                 # MPH = [0., 6.71, 13.4, 17.9, 24.6, 33.6, 44.7, 55.9, 89.5]
+A_CRUISE_MAX_BP_CUSTOM = [0.,    3,   6.,   8.,  11.,  15.,  20.,  25.,  40.]
+
+A_CRUISE_MAX_VALS_ECO = [3.5, 3.2, 2.3, 2.0, 1.15, .80, .58, .36, .30]
+
+A_CRUISE_MAX_VALS_SPORT = [3.5, 3.5, 3.3, 2.8, 1.5, 1.0, 0.75, 0.65, 0.6]
+
+def get_max_accel_eco(v_ego):
+  return interp(v_ego, A_CRUISE_MAX_BP_CUSTOM, A_CRUISE_MAX_VALS_ECO)
+
+def get_max_accel_sport(v_ego):
+  return interp(v_ego, A_CRUISE_MAX_BP_CUSTOM, A_CRUISE_MAX_VALS_SPORT)
+
 class FrogPilotPlanner:
   def __init__(self):
     self.params_memory = Params("/dev/shm/params")
@@ -46,7 +59,11 @@ class FrogPilotPlanner:
     lead_distance = self.lead_one.dRel
     stopping_distance = STOP_DISTANCE
 
-    if controlsState.experimentalMode:
+    if frogpilot_toggles.acceleration_profile == 1:
+      self.max_accel = get_max_accel_eco(v_ego)
+    elif frogpilot_toggles.acceleration_profile in (2, 3):
+      self.max_accel = get_max_accel_sport(v_ego)
+    elif controlsState.experimentalMode:
       self.max_accel = ACCEL_MAX
     else:
       self.max_accel = get_max_accel(v_ego)
