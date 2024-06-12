@@ -168,11 +168,10 @@ class FrogPilotPlanner:
         self.previous_lead_angle = self.lead_one.yRel
 
       self.lead_departing = lead_distance - self.previous_lead_distance > 0.5
-      self.previous_lead_distance = lead_distance
-
       self.lead_departing &= not carState.gasPressed
       self.lead_departing &= v_lead > 1
-      self.lead_departing &= abs(self.lead_one.yRel - self.previous_lead_angle) < 1
+
+      self.previous_lead_distance = lead_distance
     elif not (carState.standstill or self.lead_one.status):
       self.previous_lead_angle = 0
 
