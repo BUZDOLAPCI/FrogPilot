@@ -318,6 +318,41 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.setBrush(bg);
   painter.drawPolygon(scene.track_vertices);
 
+  // Paint adjacent lane paths
+  if (scene.adjacent_path && (laneWidthLeft != 0 || laneWidthRight != 0)) {
+    const float minLaneWidth = laneDetectionWidth * 0.5f;
+    const float maxLaneWidth = laneDetectionWidth * 1.5f;
+
+    auto paintLane = [&](const QPolygonF &lane, float laneWidth, bool blindspot) {
+      QLinearGradient gradient(0, height(), 0, 0);
+
+      bool redPath = laneWidth < minLaneWidth || laneWidth > maxLaneWidth || blindspot;
+      float hue = redPath ? 0.0f : 120.0f * (laneWidth - minLaneWidth) / (maxLaneWidth - minLaneWidth);
+      float hueF = hue / 360.0f;
+
+      gradient.setColorAt(0.0, QColor::fromHslF(hueF, 0.75f, 0.50f, 0.6f));
+      gradient.setColorAt(0.5, QColor::fromHslF(hueF, 0.75f, 0.50f, 0.4f));
+      gradient.setColorAt(1.0, QColor::fromHslF(hueF, 0.75f, 0.50f, 0.2f));
+
+      painter.setBrush(gradient);
+      painter.drawPolygon(lane);
+
+      if (scene.adjacent_path_metrics) {
+        painter.setFont(InterFont(30, QFont::DemiBold));
+        painter.setPen(Qt::white);
+
+        QRectF boundingRect = lane.boundingRect();
+        QString text = blindspot ? tr("Vehicle in blind spot") : QString::number(laneWidth * distanceConversion, 'f', 2) + leadDistanceUnit;
+        painter.drawText(boundingRect, Qt::AlignCenter, text);
+
+        painter.setPen(Qt::NoPen);
+      }
+    };
+
+    paintLane(scene.track_adjacent_vertices[4], laneWidthLeft, blindSpotLeft);
+    paintLane(scene.track_adjacent_vertices[5], laneWidthRight, blindSpotRight);
+  }
+
   painter.restore();
 }
 
@@ -544,6 +579,9 @@ void AnnotatedCameraWidget::updateFrogPilotWidgets(const UIScene &scene) {
   alwaysOnLateralActive = scene.always_on_lateral_active;
   showAlwaysOnLateralStatusBar = scene.show_aol_status_bar;
 
+  blindSpotLeft = scene.blind_spot_left;
+  blindSpotRight = scene.blind_spot_right;
+
   compass = scene.compass;
   bool enableCompass = compass && !hideBottomIcons;
   compass_img->setVisible(enableCompass);
@@ -562,6 +600,10 @@ void AnnotatedCameraWidget::updateFrogPilotWidgets(const UIScene &scene) {
   vtscControllingCurve = scene.vtsc_controlling_curve;
 
   experimentalMode = scene.experimental_mode;
+
+  laneDetectionWidth = scene.lane_detection_width;
+  laneWidthLeft = scene.lane_width_left;
+  laneWidthRight = scene.lane_width_right;
 
   mapOpen = scene.map_open;
 

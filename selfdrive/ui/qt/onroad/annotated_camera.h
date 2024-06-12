@@ -81,6 +81,8 @@ private:
   QHBoxLayout *bottom_layout;
 
   bool alwaysOnLateralActive;
+  bool blindSpotLeft;
+  bool blindSpotRight;
   bool compass;
   bool experimentalMode;
   bool mapOpen;
@@ -99,6 +101,9 @@ private:
   float accelerationConversion;
   float cruiseAdjustment;
   float distanceConversion;
+  float laneDetectionWidth;
+  float laneWidthLeft;
+  float laneWidthRight;
   float slcSpeedLimitOffset;
   float speedConversion;
   float unconfirmedSpeedLimit;
