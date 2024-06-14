@@ -25,6 +25,8 @@ private:
   QHBoxLayout* split;
 
   // FrogPilot variables
+  int steer;
+
   QPoint timeoutPoint = QPoint(420, 69);
 
   QTimer clickTimer;
