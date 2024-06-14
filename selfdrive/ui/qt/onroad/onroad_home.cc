@@ -284,6 +284,52 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
     }
   }
 
+  if (scene.fps_counter) {
+    double fps = scene.fps;
+
+    qint64 currentMillis = QDateTime::currentMSecsSinceEpoch();
+    static std::queue<std::pair<qint64, double>> fpsQueue;
+
+    static double avgFPS = 0.0;
+    static double maxFPS = 0.0;
+    static double minFPS = 99.9;
+
+    minFPS = std::min(minFPS, fps);
+    maxFPS = std::max(maxFPS, fps);
+
+    fpsQueue.push({currentMillis, fps});
+
+    while (!fpsQueue.empty() && currentMillis - fpsQueue.front().first > 60000) {
+      fpsQueue.pop();
+    }
+
+    if (!fpsQueue.empty()) {
+      double totalFPS = 0.0;
+      for (auto tempQueue = fpsQueue; !tempQueue.empty(); tempQueue.pop()) {
+        totalFPS += tempQueue.front().second;
+      }
+      avgFPS = totalFPS / fpsQueue.size();
+    }
+
+    QString fpsDisplayString = QString("FPS: %1 (%2) | Min: %3 | Max: %4 | Avg: %5")
+        .arg(qRound(fps))
+        .arg(paramsMemory.getInt("CameraFPS"))
+        .arg(qRound(minFPS))
+        .arg(qRound(maxFPS))
+        .arg(qRound(avgFPS));
+
+    p.setFont(InterFont(28, QFont::DemiBold));
+    p.setRenderHint(QPainter::TextAntialiasing);
+    p.setPen(Qt::white);
+
+    int textWidth = p.fontMetrics().horizontalAdvance(fpsDisplayString);
+    int xPos = (rect.width() - textWidth) / 2;
+    int yPos = rect.bottom() - 5;
+
+    p.drawText(xPos, yPos, fpsDisplayString);
+    needsUpdate = true;
+  }
+
   if (needsUpdate) {
     update();
   }

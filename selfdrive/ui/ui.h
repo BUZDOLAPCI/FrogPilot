@@ -137,6 +137,7 @@ typedef struct UIScene {
   bool enabled;
   bool experimental_mode;
   bool experimental_mode_via_screen;
+  bool fps_counter;
   bool holiday_themes;
   bool map_open;
   bool online;
@@ -169,6 +170,8 @@ typedef struct UIScene {
   bool use_kaofui_icons;
   bool use_vienna_slc_sign;
   bool vtsc_controlling_curve;
+
+  double fps;
 
   float adjusted_cruise;
   float lane_detection_width;
