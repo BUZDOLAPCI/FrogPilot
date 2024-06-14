@@ -229,6 +229,32 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
     }
   }
 
+  if (scene.show_signal) {
+    static int signalFrames = 0;
+    QColor signalBorderColor = bg;
+
+    if (scene.turn_signal_left || scene.turn_signal_right) {
+      if (sm.frame % 20 == 0 || signalFrames > 0) {
+        signalBorderColor = bg_colors[STATUS_CONDITIONAL_OVERRIDDEN];
+        signalFrames = (sm.frame % 20 == 0) ? 15 : signalFrames - 1;
+      }
+
+      QRect signalRect;
+      if (scene.turn_signal_left) {
+        signalRect = QRect(rect.x(), rect.y(), rect.width() / 2, rect.height());
+      } else if (scene.turn_signal_right) {
+        signalRect = QRect(rect.x() + rect.width() / 2, rect.y(), rect.width() / 2, rect.height());
+      }
+
+      if (!signalRect.isEmpty()) {
+        p.fillRect(signalRect, signalBorderColor);
+        needsUpdate = true;
+      }
+    } else {
+      signalFrames = 0;
+    }
+  }
+
   if (scene.show_blind_spot) {
     static int blindspotFramesLeft = 0;
     static int blindspotFramesRight = 0;
