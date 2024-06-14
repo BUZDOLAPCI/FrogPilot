@@ -73,6 +73,10 @@ void OnroadWindow::updateState(const UIState &s) {
 }
 
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {
+  // FrogPilot variables
+  UIState *s = uiState();
+  UIScene &scene = s->scene;
+
 #ifdef ENABLE_MAPS
   if (map != nullptr) {
     bool sidebarVisible = geometry().x() > 0;
@@ -90,6 +94,7 @@ void OnroadWindow::createMapWidget() {
   map = m;
   QObject::connect(m, &MapPanel::mapPanelRequested, this, &OnroadWindow::mapPanelRequested);
   QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
+  QObject::connect(nvg->map_settings_btn_bottom, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
   nvg->map_settings_btn->setEnabled(true);
 
   m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
@@ -129,4 +134,13 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 
   QPainter p(this);
   p.fillRect(rect(), QColor(bg.red(), bg.green(), bg.blue(), 255));
+
+  // FrogPilot variables
+  const UIScene &scene = s->scene;
+
+  bool needsUpdate = false;
+
+  if (needsUpdate) {
+    update();
+  }
 }
