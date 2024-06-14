@@ -117,7 +117,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
       diff_y = closest_lane_y - near_lane_y
       new_lane_y = near_lane_y + diff_y / 2
 
-      fill_xyzt(lane_line, PLAN_T_IDXS, np.array(ModelConstants.X_IDXS), new_lane_y, net_output_data['lane_lines'][0,near_lane,:,1])
+      fill_xyzt(lane_line, PLAN_T_IDXS, np.array(ModelConstants.X_IDXS), new_lane_y + 10, net_output_data['lane_lines'][0,near_lane,:,1])
 
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
